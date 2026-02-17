@@ -1,0 +1,57 @@
+y0=4
+yprime0=-7
+ysecprime0=23
+t_final=2
+A= [0,1,0; 0,0,1; 0,5,-4]
+%analytical
+x_ana=0:0.01:2;  % you can not use
+y_ana = 5-2.*exp(x_ana)+exp(-5.*x_ana)
+
+for N=[5,10,25,75,100,250];
+    %!!!!
+    clc
+    figure
+    hold on
+    dt = t_final/N
+    t=linspace(0,2,N+1)
+    y_EM= EM(t_final,N,y0,yprime0,ysecprime0,A)
+    y_IEM= IEM(t_final,N,y0,yprime0,ysecprime0,A)
+    plot(x_ana,y_ana,"g-")
+    hold on
+    plot(t,y_EM,"b-")
+    hold on
+    plot(t,y_IEM,"r-")
+    hold on
+    legend("Analytical solution","EM","IEM")
+    title(" EM vs IEM",N)
+    xlabel("x")
+    ylabel("y")
+end
+
+
+function y = EM(t_final,N,y0,yprime0,ysecprime0,A)
+    dt = t_final/N;
+    Z= zeros(3,N+1);
+    Z(:,1)= [y0;yprime0;ysecprime0];
+
+    for i= 1:N;
+        Z(:,i+1)= Z(:,i)+ dt*A* Z(:,i);
+    end
+    y=Z(1,:);
+
+end
+
+
+function y = IEM(t_final,N,y0,yprime0,ysecprime0,A)
+    dt = t_final/N;
+    Z= zeros(3,N+1);
+    Z(:,1)= [y0;yprime0;ysecprime0];
+
+    for i= 1:N;
+        LS= A*Z(:,i);
+        RS= A*(Z(:,i)+ dt*A* Z(:,i));
+        Z(:,i+1)=Z(:,i)+1/2*dt*(LS+RS);
+    end
+    y=Z(1,:);
+
+end
